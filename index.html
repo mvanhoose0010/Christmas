@@ -64,7 +64,6 @@
             font-size: 2.5em;
             color: #d4af37;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .subtitle {
@@ -80,7 +79,6 @@
             padding: 30px;
             margin-bottom: 20px;
             border: 2px solid rgba(212, 175, 55, 0.3);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
 
         .clue-card.locked {
@@ -106,7 +104,6 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1.2em;
         }
 
         .clue-title {
@@ -127,317 +124,154 @@
         .passcode-section {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
             align-items: center;
         }
 
-        .passcode-label {
-            color: #d4af37;
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-
-        input[type="text"] {
+        input {
             width: 100px;
-            padding: 12px 15px;
-            border: 2px solid rgba(212, 175, 55, 0.5);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #f4f1ea;
-            font-size: 1.2em;
+            padding: 12px;
             text-align: center;
+            font-size: 1.2em;
             font-weight: bold;
-            letter-spacing: 3px;
-            transition: all 0.3s;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #d4af37;
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        input[type="text"]::placeholder {
-            color: rgba(244, 241, 234, 0.5);
-            letter-spacing: normal;
+            border-radius: 8px;
+            border: 2px solid rgba(212,175,55,0.5);
+            background: rgba(255,255,255,0.1);
+            color: #fff;
         }
 
         button {
             padding: 12px 30px;
             background: #d4af37;
-            color: #0d2818;
             border: none;
             border-radius: 8px;
-            font-size: 1em;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        button:hover {
-            background: #f4d03f;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
         }
 
         .feedback {
             margin-top: 10px;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
             display: none;
-        }
-
-        .feedback.show {
-            display: block;
+            font-weight: bold;
         }
 
         .feedback.correct {
-            background: rgba(34, 197, 94, 0.2);
-            border: 2px solid #22c55e;
             color: #86efac;
+            display: block;
         }
 
         .feedback.incorrect {
-            background: rgba(239, 68, 68, 0.2);
-            border: 2px solid #ef4444;
             color: #fca5a5;
+            display: block;
         }
 
         .completion {
+            display: none;
             text-align: center;
             padding: 40px;
-            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(244, 208, 63, 0.2));
-            border-radius: 15px;
             border: 2px solid #d4af37;
-            display: none;
+            border-radius: 15px;
         }
 
         .completion.show {
             display: block;
         }
-
-        .completion h2 {
-            font-size: 2.5em;
-            color: #d4af37;
-            margin-bottom: 20px;
-        }
-
-        .completion p {
-            font-size: 1.2em;
-            line-height: 1.6;
-        }
-
-        .lock-icon {
-            font-size: 2em;
-            margin-bottom: 10px;
-            opacity: 0.5;
-        }
-
-        .code-note {
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px dashed #d4af37;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: #c9b896;
-            font-style: italic;
-        }
     </style>
 </head>
 <body>
-    <div class="snowflakes" id="snowflakes"></div>
-    
-    <div class="container">
-        <header>
-            <h1>🎄 Christmas Scavenger Hunt 🎁</h1>
-            <p class="subtitle">Follow the clues and find the secret codes!</p>
-        </header>
 
-        <div id="cluesContainer"></div>
-        
-        <div id="completion" class="completion">
-            <h2>🎉 Congratulations! 🎉</h2>
-            <p>You've completed the scavenger hunt!<br>Your Christmas surprise awaits... 🎁</p>
-        </div>
+<div class="snowflakes" id="snowflakes"></div>
+
+<div class="container">
+    <header>
+        <h1>🎄 Christmas Scavenger Hunt 🎁</h1>
+        <p class="subtitle">Follow the clues and unlock the secrets</p>
+    </header>
+
+    <div id="cluesContainer"></div>
+
+    <div id="completion" class="completion">
+        <h2>🎉 You Did It! 🎉</h2>
+        <p>Your Christmas surprise awaits…</p>
     </div>
+</div>
 
-    <script>
-        // CUSTOMIZE YOUR CLUES HERE
-        // Each clue will be hidden somewhere, with the passcode written on it
-        const clues = [
-            {
-            title: "Clue One",
-            text: "High above the daily dust,<br>A quiet giant stands in trust.<br>Round and round its duties span—<br>But what hides on the side you never scan?",
-            passcode: "524",
-            codeNote: "Find the physical clue and enter the 3-digit code written on it."
-        },
-        {
-            title: "Clue Two",
-            text: "Privacy's curtain of humble wood,<br>Guarding the place where few things should.<br>Kneel low, look where the shadows pour—<br>Your secret waits beneath the threshold's door.",
-            passcode: "837",
-            codeNote: "The code is on the clue you'll find."
-        },
-        {
-            title: "Clue Three",
-            text: "It drinks the air and never sips,<br>Stealing damp with unseen lips.<br>Where captured clouds retreat and gather,<br>Search the well that keeps the weather.",
-            passcode: "156",
-            codeNote: "Look for the code on your discovered clue."
-        },
-        {
-            title: "Clue Four",
-            text: "A tap of the foot—up swings the gate,<br>Swallowing scraps at a hurried rate.<br>Yet not in the muck where the refuse lies,<br>But under the crown where the lid will rise.",
-            passcode: "492",
-            codeNote: "Enter the code from the clue you found."
-        },
-        {
-            title: "Clue Five",
-            text: "A common land of bluegrass pride,<br>Held by cold steel on its chilled side.<br>Lift the commonwealth from its frosty tether—<br>Look beneath the state to find your treasure.",
-            passcode: "318",
-            codeNote: "The code awaits on your discovered clue."
-        },
-        {
-            title: "Clue Six",
-            text: "Where steady hands and patience meet,<br>A quiet rhythm taps its beat.<br>Pressure guides what joins in line,<br>Threaded paths by grand design.",
-            passcode: "604",
-            codeNote: "Find the clue and enter the code written on it."
-        },
-        {
-            title: "Clue Seven",
-            text: "I speak in pages, black and bright,<br>Born from silence, fed by light.<br>I hum, I think, then leave my mark,<br>Turning thoughts from blank to stark.",
-            passcode: "281",
-            codeNote: "The code is hidden nearby."
-        },
-        {
-            title: "The Final Clue",
-            text: "Warriors battle with buttons and light,<br>Thumbs command the digital fight.<br>But power rests where cells align—<br>Check the chamber that feeds the design.",
-            passcode: "765",
-            codeNote: "One last code to enter!"
-        }
-    ];
+<script>
+const clues = [
+    { title:"Clue One", text:"High above the daily dust,<br>A quiet giant stands in trust.<br>Round and round its duties span—<br>But what hides on the side you never scan?", passcode:"524" },
+    { title:"Clue Two", text:"Privacy's curtain of humble wood,<br>Guarding the place where few things should.<br>Kneel low, look where the shadows pour—<br>Your secret waits beneath the threshold's door.", passcode:"837" },
+    { title:"Clue Three", text:"It drinks the air and never sips,<br>Stealing damp with unseen lips.<br>Where captured clouds retreat and gather,<br>Search the well that keeps the weather.", passcode:"156" },
+    { title:"Clue Four", text:"A tap of the foot—up swings the gate,<br>Swallowing scraps at a hurried rate.<br>Yet not in the muck where the refuse lies,<br>But under the crown where the lid will rise.", passcode:"492" },
+    { title:"Clue Five", text:"A common land of bluegrass pride,<br>Held by cold steel on its chilled side.<br>Lift the commonwealth from its frosty tether—<br>Look beneath the state to find your treasure.", passcode:"318" },
+    { title:"Clue Six", text:"Where steady hands and patience meet,<br>A quiet rhythm taps its beat.<br>Pressure guides what joins in line,<br>Threaded paths by grand design.", passcode:"604" },
+    { title:"Clue Seven", text:"I speak in pages, black and bright,<br>Born from silence, fed by light.<br>I hum, I think, then leave my mark,<br>Turning thoughts from blank to stark.", passcode:"281" },
+    { title:"Clue Eight", text:"Grandchildren four, each growing fast,<br>Their birthdays counted, present and past.<br>Gather their ages, add them tight—<br>The sum will guide you to what’s next in sight.", passcode:"34" },
+    { title:"Clue Nine", text:"What’s left behind when the job is through,<br>Hollow and brown, yet holding something new.<br>Seek the core, not what you see—<br>The center guards what’s meant to be.", passcode:"639" },
+    { title:"Clue Ten", text:"I measure change but never grow,<br>I speak in numbers, high or low.<br>The answer’s hidden out of sight—<br>Beneath the place where truth feels light.", passcode:"805" },
+    { title:"Final Clue", text:"Warriors battle with buttons and light,<br>Thumbs command the digital fight.<br>But power rests where cells align—<br>Check the chamber that feeds the design.", passcode:"765" }
+];
 
-        let currentClue = 0;
+let current = 0;
 
-        function initializeHunt() {
-            const container = document.getElementById('cluesContainer');
-            
-            clues.forEach((clue, index) => {
-                const clueCard = document.createElement('div');
-                clueCard.className = `clue-card ${index > 0 ? 'locked' : ''}`;
-                clueCard.id = `clue-${index}`;
-                
-                clueCard.innerHTML = `
-                    <div class="clue-header">
-                        <div class="clue-number">${index + 1}</div>
-                        <div class="clue-title">${clue.title}</div>
-                    </div>
-                    ${index > 0 ? '<div class="lock-icon">🔒</div>' : ''}
-                    <div class="clue-text">${clue.text}</div>
-                    <div class="code-note">${clue.codeNote}</div>
-                    <div class="passcode-section">
-                        <span class="passcode-label">Enter Code:</span>
-                        <input 
-                            type="text" 
-                            id="passcode-${index}" 
-                            placeholder="000"
-                            maxlength="3"
-                            ${index > 0 ? 'disabled' : ''}
-                        >
-                        <button onclick="checkPasscode(${index})" ${index > 0 ? 'disabled' : ''}>
-                            Unlock
-                        </button>
-                    </div>
-                    <div class="feedback" id="feedback-${index}"></div>
-                `;
-                
-                container.appendChild(clueCard);
-            });
-            
-            createSnowflakes();
-        }
+function init() {
+    const c = document.getElementById("cluesContainer");
+    clues.forEach((clue,i)=>{
+        const d=document.createElement("div");
+        d.className="clue-card"+(i>0?" locked":"");
+        d.innerHTML=`
+            <div class="clue-header">
+                <div class="clue-number">${i+1}</div>
+                <div class="clue-title">${clue.title}</div>
+            </div>
+            <div class="clue-text">${clue.text}</div>
+            <div class="passcode-section">
+                <input id="p${i}" maxlength="3" ${i>0?"disabled":""}>
+                <button onclick="check(${i})" ${i>0?"disabled":""}>Unlock</button>
+            </div>
+            <div class="feedback" id="f${i}"></div>`;
+        c.appendChild(d);
+    });
+    snow();
+}
 
-        function checkPasscode(index) {
-            const input = document.getElementById(`passcode-${index}`);
-            const feedback = document.getElementById(`feedback-${index}`);
-            const userCode = input.value.trim();
-            const correctCode = clues[index].passcode;
-            
-            if (userCode === correctCode) {
-                feedback.textContent = '🎉 Correct code! Unlocking next clue...';
-                feedback.className = 'feedback correct show';
-                input.disabled = true;
-                
-                setTimeout(() => {
-                    unlockNextClue(index);
-                }, 1500);
-            } else {
-                feedback.textContent = '❌ Incorrect code. Keep searching!';
-                feedback.className = 'feedback incorrect show';
-                
-                setTimeout(() => {
-                    feedback.classList.remove('show');
-                }, 2000);
-            }
-        }
+function check(i){
+    const input=document.getElementById(`p${i}`);
+    const f=document.getElementById(`f${i}`);
+    if(input.value===clues[i].passcode){
+        f.textContent="Correct!";
+        f.className="feedback correct";
+        unlock(i+1);
+    } else {
+        f.textContent="Try again!";
+        f.className="feedback incorrect";
+    }
+}
 
-        function unlockNextClue(currentIndex) {
-            const nextIndex = currentIndex + 1;
-            
-            if (nextIndex < clues.length) {
-                const nextClue = document.getElementById(`clue-${nextIndex}`);
-                const nextInput = document.getElementById(`passcode-${nextIndex}`);
-                const nextButton = nextClue.querySelector('button');
-                
-                nextClue.classList.remove('locked');
-                nextInput.disabled = false;
-                nextButton.disabled = false;
-                
-                nextClue.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } else {
-                setTimeout(() => {
-                    document.getElementById('completion').classList.add('show');
-                    document.getElementById('completion').scrollIntoView({ behavior: 'smooth' });
-                }, 500);
-            }
-        }
+function unlock(i){
+    if(i<clues.length){
+        const card=document.getElementsByClassName("clue-card")[i];
+        card.classList.remove("locked");
+        card.querySelector("input").disabled=false;
+        card.querySelector("button").disabled=false;
+        card.scrollIntoView({behavior:"smooth"});
+    } else {
+        document.getElementById("completion").classList.add("show");
+    }
+}
 
-        function createSnowflakes() {
-            const snowflakesContainer = document.getElementById('snowflakes');
-            const snowflakeChars = ['❄', '❅', '❆'];
-            
-            for (let i = 0; i < 50; i++) {
-                const snowflake = document.createElement('div');
-                snowflake.className = 'snowflake';
-                snowflake.textContent = snowflakeChars[Math.floor(Math.random() * snowflakeChars.length)];
-                snowflake.style.left = Math.random() * 100 + '%';
-                snowflake.style.animationDuration = (Math.random() * 3 + 2) + 's';
-                snowflake.style.animationDelay = Math.random() * 5 + 's';
-                snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
-                snowflakesContainer.appendChild(snowflake);
-            }
-        }
+function snow(){
+    const s=document.getElementById("snowflakes");
+    ["❄","❅","❆"].forEach(()=>{});
+    for(let i=0;i<40;i++){
+        const f=document.createElement("div");
+        f.className="snowflake";
+        f.textContent="❄";
+        f.style.left=Math.random()*100+"%";
+        f.style.animationDuration=2+Math.random()*3+"s";
+        s.appendChild(f);
+    }
+}
 
-        // Allow Enter key to submit passcodes
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const activeElement = document.activeElement;
-                if (activeElement.tagName === 'INPUT') {
-                    const index = parseInt(activeElement.id.split('-')[1]);
-                    checkPasscode(index);
-                }
-            }
-        });
-
-        // Auto-format input to numbers only
-        document.addEventListener('input', (e) => {
-            if (e.target.tagName === 'INPUT' && e.target.id.startsWith('passcode-')) {
-                e.target.value = e.target.value.replace(/[^0-9]/g, '');
-            }
-        });
-
-        initializeHunt();
-    </script>
+init();
+</script>
 </body>
 </html>
