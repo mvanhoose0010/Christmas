@@ -1,277 +1,605 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Christmas Scavenger Hunt 🎄</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Georgia', serif;
-            background: linear-gradient(135deg, #1a472a 0%, #0d2818 100%);
-            color: #f4f1ea;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .snowflakes {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .snowflake {
-            position: absolute;
-            top: -10px;
-            color: #fff;
-            font-size: 1em;
-            opacity: 0.8;
-            animation: fall linear infinite;
-        }
-
-        @keyframes fall {
-            to {
-                transform: translateY(100vh);
-            }
-        }
-
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 2;
-        }
-
-        header {
-            text-align: center;
-            padding: 40px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            margin-bottom: 30px;
-            border: 2px solid rgba(212, 175, 55, 0.3);
-        }
-
-        h1 {
-            font-size: 2.5em;
-            color: #d4af37;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            font-size: 1.1em;
-            color: #c9b896;
-            font-style: italic;
-        }
-
-        .clue-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 20px;
-            border: 2px solid rgba(212, 175, 55, 0.3);
-        }
-
-        .clue-card.locked {
-            opacity: 0.3;
-            filter: blur(5px);
-            pointer-events: none;
-        }
-
-        .clue-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            gap: 10px;
-        }
-
-        .clue-number {
-            background: #d4af37;
-            color: #0d2818;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        .clue-title {
-            font-size: 1.4em;
-            color: #d4af37;
-        }
-
-        .clue-text {
-            font-size: 1.1em;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            padding: 20px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-            border-left: 4px solid #d4af37;
-        }
-
-        .passcode-section {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        input {
-            width: 100px;
-            padding: 12px;
-            text-align: center;
-            font-size: 1.2em;
-            font-weight: bold;
-            border-radius: 8px;
-            border: 2px solid rgba(212,175,55,0.5);
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-        }
-
-        button {
-            padding: 12px 30px;
-            background: #d4af37;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .feedback {
-            margin-top: 10px;
-            display: none;
-            font-weight: bold;
-        }
-
-        .feedback.correct {
-            color: #86efac;
-            display: block;
-        }
-
-        .feedback.incorrect {
-            color: #fca5a5;
-            display: block;
-        }
-
-        .completion {
-            display: none;
-            text-align: center;
-            padding: 40px;
-            border: 2px solid #d4af37;
-            border-radius: 15px;
-        }
-
-        .completion.show {
-            display: block;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solution - Key-Based Spreadsheet</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.2) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 50px;
+      animation: fadeInDown 0.8s ease;
+    }
+    
+    .logo {
+      font-size: 42px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 10px;
+      letter-spacing: -1px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    
+    .tagline {
+      color: rgba(255,255,255,0.9);
+      font-size: 16px;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    
+    .card {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      margin-bottom: 30px;
+      animation: fadeInUp 0.8s ease;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #667eea;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, #667eea, #764ba2);
+      border-radius: 2px;
+    }
+    
+    .date-input {
+      width: 100%;
+      padding: 16px 20px;
+      font-size: 16px;
+      border: 2px solid #e8e8e8;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      background: white;
+    }
+    
+    .date-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    
+    .spreadsheet-container {
+      overflow-x: auto;
+      margin-top: 20px;
+      border-radius: 12px;
+      background: #f8f9fa;
+      padding: 20px;
+    }
+    
+    table {
+      border-collapse: separate;
+      border-spacing: 8px;
+      width: 100%;
+    }
+    
+    td {
+      background: white;
+      border-radius: 8px;
+      padding: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transition: all 0.3s ease;
+    }
+    
+    td:hover {
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+      transform: translateY(-2px);
+    }
+    
+    input[type="text"] {
+      width: 100%;
+      border: none;
+      padding: 12px;
+      font-size: 15px;
+      font-family: 'Courier New', monospace;
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+    
+    input[type="text"]:focus {
+      outline: none;
+      background: #f8f9ff;
+    }
+    
+    input[type="text"].highlight-match {
+      background: #ff4757 !important;
+      color: white;
+      font-weight: 600;
+    }
+    
+    input[type="text"].highlight-lookout {
+      background: #ffa502 !important;
+      color: white;
+      font-weight: 600;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 16px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      flex: 1;
+      min-width: 200px;
+      padding: 16px 32px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    button:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn-generate {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-generate:hover {
+      box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+      transform: translateY(-2px);
+    }
+    
+    .btn-load {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+    }
+    
+    .btn-load:hover {
+      box-shadow: 0 6px 25px rgba(245, 87, 108, 0.6);
+      transform: translateY(-2px);
+    }
+    
+    .btn-copy {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+    }
+    
+    .btn-copy:hover {
+      box-shadow: 0 6px 25px rgba(79, 172, 254, 0.6);
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 20px;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+      border: 2px solid #e8e8e8;
+      border-radius: 12px;
+      resize: vertical;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+      background: white;
+    }
+    
+    .whiteboard-field {
+      min-height: 100px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      font-size: 15px;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 30px;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      animation: fadeIn 1s ease 0.5s both;
+    }
+    
+    .footer-text {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+      font-weight: 300;
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .success-message {
+      position: fixed;
+      top: 30px;
+      right: 30px;
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      font-weight: 500;
+      animation: slideInRight 0.5s ease, fadeOut 0.5s ease 2.5s forwards;
+      z-index: 1000;
+    }
+    
+    @keyframes slideInRight {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: translateX(400px);
+      }
+    }
+  </style>
 </head>
 <body>
-
-<div class="snowflakes" id="snowflakes"></div>
-
-<div class="container">
-    <header>
-        <h1>🎄 Christmas Scavenger Hunt 🎁</h1>
-        <p class="subtitle">Follow the clues and unlock the secrets</p>
-    </header>
-
-    <div id="cluesContainer"></div>
-
-    <div id="completion" class="completion">
-        <h2>🎉 You Did It! 🎉</h2>
-        <p>Your Christmas surprise awaits…</p>
+  <div class="container">
+    <div class="header">
+      <div class="logo">Solution</div>
     </div>
-</div>
-
-<script>
-const clues = [
-    { title:"Clue One", text:"High above the daily dust,<br>A quiet giant stands in trust.<br>Round and round its duties span—<br>But what hides on the side you never scan?", passcode:"524" },
-    { title:"Clue Two", text:"Privacy's curtain of humble wood,<br>Guarding the place where few things should.<br>Kneel low, look where the shadows pour—<br>Your secret waits beneath the threshold's door.", passcode:"837" },
-    { title:"Clue Three", text:"It drinks the air and never sips,<br>Stealing damp with unseen lips.<br>Where captured clouds retreat and gather,<br>Search the well that keeps the weather.", passcode:"156" },
-    { title:"Clue Four", text:"A tap of the foot—up swings the gate,<br>Swallowing scraps at a hurried rate.<br>Yet not in the muck where the refuse lies,<br>But under the crown where the lid will rise.", passcode:"492" },
-    { title:"Clue Five", text:"A common land of bluegrass pride,<br>Held by cold steel on its chilled side.<br>Lift the commonwealth from its frosty tether—<br>Look beneath the state to find your treasure.", passcode:"318" },
-    { title:"Clue Six", text:"Where steady hands and patience meet,<br>A quiet rhythm taps its beat.<br>Pressure guides what joins in line,<br>Threaded paths by grand design.", passcode:"604" },
-    { title:"Clue Seven", text:"I speak in pages, black and bright,<br>Born from silence, fed by light.<br>I hum, I think, then leave my mark,<br>Turning thoughts from blank to stark.", passcode:"281" },
-    { title:"Clue Eight", text:"Grandchildren four, each growing fast,<br>Their birthdays counted, present and past.<br>Gather their ages, add them tight—<br>The sum will guide you to what’s next in sight.", passcode:"34" },
-    { title:"Clue Nine", text:"What’s left behind when the job is through,<br>Hollow and brown, yet holding something new.<br>Seek the core, not what you see—<br>The center guards what’s meant to be.", passcode:"639" },
-    { title:"Clue Ten", text:"I measure change but never grow,<br>I speak in numbers, high or low.<br>The answer’s hidden out of sight—<br>Beneath the place where truth feels light.", passcode:"805" },
-    { title:"Final Clue", text:"Warriors battle with buttons and light,<br>Thumbs command the digital fight.<br>But power rests where cells align—<br>Check the chamber that feeds the design.", passcode:"765" }
-];
-
-let current = 0;
-
-function init() {
-    const c = document.getElementById("cluesContainer");
-    clues.forEach((clue,i)=>{
-        const d=document.createElement("div");
-        d.className="clue-card"+(i>0?" locked":"");
-        d.innerHTML=`
-            <div class="clue-header">
-                <div class="clue-number">${i+1}</div>
-                <div class="clue-title">${clue.title}</div>
-            </div>
-            <div class="clue-text">${clue.text}</div>
-            <div class="passcode-section">
-                <input id="p${i}" maxlength="3" ${i>0?"disabled":""}>
-                <button onclick="check(${i})" ${i>0?"disabled":""}>Unlock</button>
-            </div>
-            <div class="feedback" id="f${i}"></div>`;
-        c.appendChild(d);
-    });
-    snow();
-}
-
-function check(i){
-    const input=document.getElementById(`p${i}`);
-    const f=document.getElementById(`f${i}`);
-    if(input.value===clues[i].passcode){
-        f.textContent="Correct!";
-        f.className="feedback correct";
-        unlock(i+1);
-    } else {
-        f.textContent="Try again!";
-        f.className="feedback incorrect";
+    
+    <div class="card">
+      <div class="section-title">Be on the lookout for</div>
+      <textarea id="lookoutField" class="whiteboard-field" placeholder="Enter items to watch for (separate by commas or new lines)..."></textarea>
+      
+      <div class="section-title" style="margin-top: 30px;">Priority Solutions</div>
+      <textarea id="priorityField" class="whiteboard-field" placeholder="Enter priority solutions (separate by commas or new lines)..."></textarea>
+    </div>
+    
+    <div class="card">
+      <div class="section-title">Solution Cart</div>
+      <div class="spreadsheet-container">
+        <table id="sheet"></table>
+      </div>
+      
+      <div class="button-group">
+        <button class="btn-generate" onclick="generateKey()">
+          <span style="position: relative; z-index: 1;">🔐 Generate Key</span>
+        </button>
+        <button class="btn-load" onclick="loadKey()">
+          <span style="position: relative; z-index: 1;">📥 Load Key</span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="section-title">Access Key</div>
+      <textarea id="keyBox" placeholder="Your encrypted key will appear here..."></textarea>
+      <div class="button-group">
+        <button class="btn-copy" onclick="copyKey()">
+          <span style="position: relative; z-index: 1;">📋 Copy Key to Clipboard</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const rows = 15;
+    const cols = 6;
+    const sheet = document.getElementById("sheet");
+    const headers = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"];
+    
+    // Create header row
+    const headerRow = document.createElement("tr");
+    for (let c = 0; c < cols; c++) {
+      const th = document.createElement("th");
+      th.textContent = headers[c];
+      th.style.cssText = `
+        padding: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #667eea;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: left;
+        background: rgba(102, 126, 234, 0.08);
+        border-radius: 8px;
+      `;
+      headerRow.appendChild(th);
     }
-}
-
-function unlock(i){
-    if(i<clues.length){
-        const card=document.getElementsByClassName("clue-card")[i];
-        card.classList.remove("locked");
-        card.querySelector("input").disabled=false;
-        card.querySelector("button").disabled=false;
-        card.scrollIntoView({behavior:"smooth"});
-    } else {
-        document.getElementById("completion").classList.add("show");
+    sheet.appendChild(headerRow);
+    
+    // Create data rows
+    for (let r = 0; r < rows; r++) {
+      const tr = document.createElement("tr");
+      for (let c = 0; c < cols; c++) {
+        const td = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = "text";
+        input.dataset.r = r;
+        input.dataset.c = c;
+        
+        // Add paste handler for tab-separated values
+        input.addEventListener('paste', function(e) {
+          const pastedText = e.clipboardData.getData('text');
+          
+          // Check if it contains tabs or newlines (spreadsheet data)
+          if (pastedText.includes('\t') || pastedText.includes('\n')) {
+            e.preventDefault();
+            
+            const startRow = parseInt(this.dataset.r);
+            const startCol = parseInt(this.dataset.c);
+            
+            const lines = pastedText.split('\n');
+            
+            for (let i = 0; i < lines.length; i++) {
+              const targetRow = startRow + i;
+              if (targetRow >= rows) break;
+              
+              const cells = lines[i].split('\t');
+              
+              for (let j = 0; j < cells.length; j++) {
+                const targetCol = startCol + j;
+                if (targetCol >= cols) break;
+                
+                const targetInput = document.querySelector(`input[data-r="${targetRow}"][data-c="${targetCol}"]`);
+                if (targetInput) {
+                  targetInput.value = cells[j];
+                }
+              }
+            }
+            
+            showSuccess('✓ Data pasted successfully');
+            checkMatches();
+          }
+        });
+        
+        // Add input handler to check for matches
+        input.addEventListener('input', checkMatches);
+        
+        td.appendChild(input);
+        tr.appendChild(td);
+      }
+      sheet.appendChild(tr);
     }
-}
-
-function snow(){
-    const s=document.getElementById("snowflakes");
-    ["❄","❅","❆"].forEach(()=>{});
-    for(let i=0;i<40;i++){
-        const f=document.createElement("div");
-        f.className="snowflake";
-        f.textContent="❄";
-        f.style.left=Math.random()*100+"%";
-        f.style.animationDuration=2+Math.random()*3+"s";
-        s.appendChild(f);
+    
+    // Add input handler to priority field
+    document.getElementById('priorityField').addEventListener('input', checkMatches);
+    document.getElementById('lookoutField').addEventListener('input', checkMatches);
+    
+    function checkMatches() {
+      const priorityText = document.getElementById('priorityField').value.toLowerCase();
+      // Split by newlines AND commas, then filter out empty values
+      const priorityValues = priorityText
+        .split(/[\n,]+/)
+        .map(item => item.trim())
+        .filter(item => item);
+      
+      const lookoutText = document.getElementById('lookoutField').value.toLowerCase();
+      // Split by newlines AND commas, then filter out empty values
+      const lookoutValues = lookoutText
+        .split(/[\n,]+/)
+        .map(item => item.trim())
+        .filter(item => item);
+      
+      // Check all cells in the solution cart
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const input = document.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
+          if (input) {
+            const cellValue = input.value.toLowerCase().trim();
+            const cellPrefix = cellValue.substring(0, 6);
+            
+            // Remove both highlight classes first
+            input.classList.remove('highlight-match', 'highlight-lookout');
+            
+            // Check if cell's first 6 characters match any priority solution (priority wins)
+            const hasPriorityMatch = priorityValues.some(priorityValue => {
+              const priorityPrefix = priorityValue.substring(0, 6);
+              return cellPrefix && priorityPrefix && cellPrefix === priorityPrefix;
+            });
+            
+            if (hasPriorityMatch) {
+              input.classList.add('highlight-match');
+            } else {
+              // Check if cell's first 6 characters match any lookout item
+              const hasLookoutMatch = lookoutValues.some(lookoutValue => {
+                const lookoutPrefix = lookoutValue.substring(0, 6);
+                return cellPrefix && lookoutPrefix && cellPrefix === lookoutPrefix;
+              });
+              
+              if (hasLookoutMatch) {
+                input.classList.add('highlight-lookout');
+              }
+            }
+          }
+        }
+      }
     }
-}
-
-init();
-</script>
+    
+    function showSuccess(message) {
+      const div = document.createElement('div');
+      div.className = 'success-message';
+      div.textContent = message;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 3000);
+    }
+    
+    function generateKey() {
+      const cells = [];
+      for (let r = 0; r < rows; r++) {
+        cells[r] = [];
+        for (let c = 0; c < cols; c++) {
+          cells[r][c] = document.querySelector(`input[data-r="${r}"][data-c="${c}"]`).value;
+        }
+      }
+      const data = {
+        lookout: document.getElementById("lookoutField").value,
+        priority: document.getElementById("priorityField").value,
+        cells
+      };
+      const key = btoa(JSON.stringify(data));
+      document.getElementById("keyBox").value = key;
+      showSuccess('✓ Key generated successfully');
+    }
+    
+    function loadKey() {
+      try {
+        const key = document.getElementById("keyBox").value.trim();
+        if (!key) {
+          alert("Please enter a key");
+          return;
+        }
+        const data = JSON.parse(atob(key));
+        document.getElementById("lookoutField").value = data.lookout || "";
+        document.getElementById("priorityField").value = data.priority || "";
+        
+        // Clear all cells first
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            document.querySelector(`input[data-r="${r}"][data-c="${c}"]`).value = "";
+          }
+        }
+        
+        // Load saved data (works with old 5-column or new 6-column keys)
+        if (data.cells) {
+          for (let r = 0; r < data.cells.length && r < rows; r++) {
+            for (let c = 0; c < data.cells[r].length && c < cols; c++) {
+              document.querySelector(`input[data-r="${r}"][data-c="${c}"]`).value = data.cells[r][c] || "";
+            }
+          }
+        }
+        checkMatches();
+        showSuccess('✓ Data loaded successfully');
+      } catch (e) {
+        console.error(e);
+        alert("Invalid key - please check the format");
+      }
+    }
+    
+    function copyKey() {
+      const keyBox = document.getElementById("keyBox");
+      const key = keyBox.value;
+      
+      if (!key) {
+        alert("No key to copy - please generate a key first");
+        return;
+      }
+      
+      keyBox.select();
+      keyBox.setSelectionRange(0, 99999); // For mobile devices
+      
+      navigator.clipboard.writeText(key).then(() => {
+        showSuccess('✓ Key copied to clipboard');
+      }).catch(() => {
+        // Fallback for older browsers
+        document.execCommand('copy');
+        showSuccess('✓ Key copied to clipboard');
+      });
+    }
+  </script>
 </body>
 </html>
