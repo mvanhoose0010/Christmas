@@ -415,6 +415,78 @@
       animation: fadeIn 1s ease 0.5s both;
     }
     
+    .toggle-container {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .toggle-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+      letter-spacing: 0.3px;
+    }
+    
+    .toggle-switch {
+      position: relative;
+      width: 60px;
+      height: 32px;
+      background: #e0e0e0;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid #d0d0d0;
+    }
+    
+    .toggle-switch.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-color: #667eea;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .toggle-switch.active .toggle-slider {
+      transform: translateX(28px);
+    }
+    
+    .toggle-status {
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .status-off {
+      background: #ffebee;
+      color: #c62828;
+    }
+    
+    .status-on {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    
     .footer-text {
       color: rgba(255,255,255,0.8);
       font-size: 14px;
@@ -532,8 +604,18 @@
     </div>
   </div>
   
+  <div class="container">
+    <div class="toggle-container">
+      <span class="toggle-label">Column Lock Mode:</span>
+      <div class="toggle-switch" id="columnLockToggle" onclick="toggleColumnLock()">
+        <div class="toggle-slider"></div>
+      </div>
+      <span class="toggle-status status-off" id="lockStatus">Off (Tab moves right)</span>
+    </div>
+  </div>
+  
   <script>
-    const rows = 15;
+    const rows = 20;
     const cols = 6;
     const sheet = document.getElementById("sheet");
     const headers = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"];
@@ -544,6 +626,7 @@
     let selectedCells = new Set();
     let lastClickedCell = null;
     let reviewItems = []; // Array of objects: {value, row, col}
+    let columnLockEnabled = false;
     
     // Create header row
     const headerRow = document.createElement("tr");
@@ -624,6 +707,9 @@
         input.addEventListener('dragstart', handleDragStart);
         input.addEventListener('dragend', handleDragEnd);
         
+        // Add keydown handler for column lock navigation
+        input.addEventListener('keydown', handleCellKeyDown);
+        
         td.appendChild(input);
         tr.appendChild(td);
       }
@@ -656,6 +742,68 @@
     
     // Render initial empty state
     renderReviewBoard();
+    
+    function handleCellKeyDown(e) {
+      if (!columnLockEnabled) return;
+      
+      const input = e.target;
+      const r = parseInt(input.dataset.r);
+      const c = parseInt(input.dataset.c);
+      
+      // Intercept Tab key when column lock is enabled
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        
+        // Move down in the same column (or wrap to top if at bottom)
+        const nextRow = e.shiftKey ? (r - 1 + rows) % rows : (r + 1) % rows;
+        const nextInput = document.querySelector(`input[data-r="${nextRow}"][data-c="${c}"]`);
+        
+        if (nextInput) {
+          nextInput.focus();
+          nextInput.select();
+        }
+      }
+      
+      // Arrow down - move to next row in same column
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const nextRow = (r + 1) % rows;
+        const nextInput = document.querySelector(`input[data-r="${nextRow}"][data-c="${c}"]`);
+        if (nextInput) {
+          nextInput.focus();
+          nextInput.select();
+        }
+      }
+      
+      // Arrow up - move to previous row in same column
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const nextRow = (r - 1 + rows) % rows;
+        const nextInput = document.querySelector(`input[data-r="${nextRow}"][data-c="${c}"]`);
+        if (nextInput) {
+          nextInput.focus();
+          nextInput.select();
+        }
+      }
+    }
+    
+    function toggleColumnLock() {
+      columnLockEnabled = !columnLockEnabled;
+      const toggle = document.getElementById('columnLockToggle');
+      const status = document.getElementById('lockStatus');
+      
+      if (columnLockEnabled) {
+        toggle.classList.add('active');
+        status.textContent = 'On (Tab moves down)';
+        status.className = 'toggle-status status-on';
+        showSuccess('✓ Column Lock enabled - Tab now moves down');
+      } else {
+        toggle.classList.remove('active');
+        status.textContent = 'Off (Tab moves right)';
+        status.className = 'toggle-status status-off';
+        showSuccess('✓ Column Lock disabled - Tab moves right');
+      }
+    }
     
     function handleMouseDown(e) {
       const input = e.target;
