@@ -165,6 +165,142 @@
       font-weight: 600;
     }
     
+    input[type="text"].selected {
+      background: #d4e3fc !important;
+      border: 2px solid #4285f4;
+    }
+    
+    input[type="text"].highlight-match.selected {
+      background: #ff6b7a !important;
+      border: 2px solid #ff1744;
+    }
+    
+    input[type="text"].highlight-lookout.selected {
+      background: #ffb733 !important;
+      border: 2px solid #ff8c00;
+    }
+    
+    input[type="text"].dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+    }
+    
+    input[type="text"].in-review {
+      background: #d4edda !important;
+      border: 2px solid #28a745;
+    }
+    
+    input[type="text"].highlight-match.in-review {
+      background: linear-gradient(135deg, #d4edda 0%, #ffebee 100%) !important;
+      border: 2px solid #28a745;
+    }
+    
+    input[type="text"].highlight-lookout.in-review {
+      background: linear-gradient(135deg, #d4edda 0%, #fff9f0 100%) !important;
+      border: 2px solid #28a745;
+    }
+    
+    .review-board {
+      min-height: 200px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      border: 2px dashed #d0d0d0;
+      transition: all 0.3s ease;
+    }
+    
+    .review-board.drag-over {
+      background: #e8f4f8;
+      border-color: #4285f4;
+      box-shadow: 0 0 20px rgba(66, 133, 244, 0.2);
+    }
+    
+    .review-item {
+      background: white;
+      padding: 16px 20px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+      cursor: move;
+      border-left: 4px solid #667eea;
+    }
+    
+    .review-item:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      transform: translateY(-2px);
+    }
+    
+    .review-item.priority-match {
+      border-left-color: #ff4757;
+      background: linear-gradient(90deg, #fff5f5 0%, white 10%);
+    }
+    
+    .review-item.lookout-match {
+      border-left-color: #ffa502;
+      background: linear-gradient(90deg, #fff9f0 0%, white 10%);
+    }
+    
+    .review-item-content {
+      flex: 1;
+      font-family: 'Courier New', monospace;
+      font-size: 15px;
+      color: #333;
+    }
+    
+    .review-item-badge {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 10px;
+    }
+    
+    .badge-priority {
+      background: #ff4757;
+      color: white;
+    }
+    
+    .badge-lookout {
+      background: #ffa502;
+      color: white;
+    }
+    
+    .review-item-remove {
+      background: #ff4757;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    
+    .review-item-remove:hover {
+      background: #ff1744;
+      transform: scale(1.05);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+      font-size: 15px;
+    }
+    
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+      opacity: 0.3;
+    }
+    
     .button-group {
       display: flex;
       gap: 16px;
@@ -360,6 +496,16 @@
     </div>
     
     <div class="card">
+      <div class="section-title">Under Review</div>
+      <div class="review-board" id="reviewBoard">
+        <div class="empty-state">
+          <div class="empty-state-icon">📋</div>
+          <div>Drag cells from Solution Cart here to review them</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
       <div class="section-title">Solution Cart</div>
       <div class="spreadsheet-container">
         <table id="sheet"></table>
@@ -391,6 +537,13 @@
     const cols = 6;
     const sheet = document.getElementById("sheet");
     const headers = ["Top Left", "Top Right", "Middle Left", "Middle Right", "Bottom Left", "Bottom Right"];
+    
+    // Selection state
+    let isMouseDown = false;
+    let selectionStart = null;
+    let selectedCells = new Set();
+    let lastClickedCell = null;
+    let reviewItems = []; // Array of objects: {value, row, col}
     
     // Create header row
     const headerRow = document.createElement("tr");
@@ -460,6 +613,17 @@
         // Add input handler to check for matches
         input.addEventListener('input', checkMatches);
         
+        // Add selection handlers
+        input.addEventListener('mousedown', handleMouseDown);
+        input.addEventListener('mouseenter', handleMouseEnter);
+        input.addEventListener('mouseup', handleMouseUp);
+        input.addEventListener('click', handleClick);
+        
+        // Add drag handlers
+        input.draggable = true;
+        input.addEventListener('dragstart', handleDragStart);
+        input.addEventListener('dragend', handleDragEnd);
+        
         td.appendChild(input);
         tr.appendChild(td);
       }
@@ -467,8 +631,355 @@
     }
     
     // Add input handler to priority field
-    document.getElementById('priorityField').addEventListener('input', checkMatches);
-    document.getElementById('lookoutField').addEventListener('input', checkMatches);
+    document.getElementById('priorityField').addEventListener('input', () => {
+      checkMatches();
+      renderReviewBoard();
+    });
+    document.getElementById('lookoutField').addEventListener('input', () => {
+      checkMatches();
+      renderReviewBoard();
+    });
+    
+    // Global mouse up handler
+    document.addEventListener('mouseup', () => {
+      isMouseDown = false;
+    });
+    
+    // Keyboard handlers for selection
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // Setup review board drop zone
+    const reviewBoard = document.getElementById('reviewBoard');
+    reviewBoard.addEventListener('dragover', handleReviewDragOver);
+    reviewBoard.addEventListener('dragleave', handleReviewDragLeave);
+    reviewBoard.addEventListener('drop', handleReviewDrop);
+    
+    // Render initial empty state
+    renderReviewBoard();
+    
+    function handleMouseDown(e) {
+      const input = e.target;
+      const r = parseInt(input.dataset.r);
+      const c = parseInt(input.dataset.c);
+      
+      if (!e.shiftKey && !e.ctrlKey && !e.metaKey) {
+        // Regular click - start new selection
+        clearSelection();
+        isMouseDown = true;
+        selectionStart = { r, c };
+        addToSelection(r, c);
+        lastClickedCell = { r, c };
+      } else if (e.shiftKey && lastClickedCell) {
+        // Shift+click - select range from last clicked cell
+        e.preventDefault();
+        selectRange(lastClickedCell.r, lastClickedCell.c, r, c);
+      } else if (e.ctrlKey || e.metaKey) {
+        // Ctrl/Cmd+click - toggle cell selection
+        e.preventDefault();
+        toggleSelection(r, c);
+        lastClickedCell = { r, c };
+      }
+    }
+    
+    function handleMouseEnter(e) {
+      if (isMouseDown && selectionStart) {
+        const input = e.target;
+        const r = parseInt(input.dataset.r);
+        const c = parseInt(input.dataset.c);
+        
+        clearSelection();
+        selectRange(selectionStart.r, selectionStart.c, r, c);
+      }
+    }
+    
+    function handleMouseUp(e) {
+      isMouseDown = false;
+    }
+    
+    function handleClick(e) {
+      // Prevent focus if we're doing multi-select
+      if (e.shiftKey || e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+      }
+    }
+    
+    function handleKeyDown(e) {
+      // Delete key - clear selected cells
+      if (e.key === 'Delete' && selectedCells.size > 0) {
+        e.preventDefault();
+        selectedCells.forEach(key => {
+          const [r, c] = key.split(',').map(Number);
+          const input = document.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
+          if (input) input.value = '';
+        });
+        checkMatches();
+      }
+      
+      // Ctrl/Cmd+C - copy selected cells
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c' && selectedCells.size > 0) {
+        e.preventDefault();
+        copySelectedCells();
+      }
+      
+      // Ctrl/Cmd+V - paste to selected cells
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v' && selectedCells.size > 0) {
+        // Let the input's paste handler deal with this
+      }
+      
+      // Ctrl/Cmd+A - select all cells
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a' && document.activeElement.tagName === 'INPUT') {
+        const input = document.activeElement;
+        if (input.dataset.r !== undefined) {
+          e.preventDefault();
+          selectAllCells();
+        }
+      }
+    }
+    
+    function addToSelection(r, c) {
+      const key = `${r},${c}`;
+      selectedCells.add(key);
+      updateCellSelection(r, c, true);
+    }
+    
+    function removeFromSelection(r, c) {
+      const key = `${r},${c}`;
+      selectedCells.delete(key);
+      updateCellSelection(r, c, false);
+    }
+    
+    function toggleSelection(r, c) {
+      const key = `${r},${c}`;
+      if (selectedCells.has(key)) {
+        removeFromSelection(r, c);
+      } else {
+        addToSelection(r, c);
+      }
+    }
+    
+    function clearSelection() {
+      selectedCells.forEach(key => {
+        const [r, c] = key.split(',').map(Number);
+        updateCellSelection(r, c, false);
+      });
+      selectedCells.clear();
+    }
+    
+    function selectRange(r1, c1, r2, c2) {
+      const minR = Math.min(r1, r2);
+      const maxR = Math.max(r1, r2);
+      const minC = Math.min(c1, c2);
+      const maxC = Math.max(c1, c2);
+      
+      for (let r = minR; r <= maxR; r++) {
+        for (let c = minC; c <= maxC; c++) {
+          addToSelection(r, c);
+        }
+      }
+    }
+    
+    function selectAllCells() {
+      clearSelection();
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          addToSelection(r, c);
+        }
+      }
+    }
+    
+    function updateCellSelection(r, c, isSelected) {
+      const input = document.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
+      if (input) {
+        if (isSelected) {
+          input.classList.add('selected');
+        } else {
+          input.classList.remove('selected');
+        }
+      }
+    }
+    
+    function copySelectedCells() {
+      if (selectedCells.size === 0) return;
+      
+      // Find the bounds of selection
+      let minR = Infinity, maxR = -Infinity, minC = Infinity, maxC = -Infinity;
+      selectedCells.forEach(key => {
+        const [r, c] = key.split(',').map(Number);
+        minR = Math.min(minR, r);
+        maxR = Math.max(maxR, r);
+        minC = Math.min(minC, c);
+        maxC = Math.max(maxC, c);
+      });
+      
+      // Build tab-separated text
+      let text = '';
+      for (let r = minR; r <= maxR; r++) {
+        const rowData = [];
+        for (let c = minC; c <= maxC; c++) {
+          const input = document.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
+          rowData.push(input ? input.value : '');
+        }
+        text += rowData.join('\t') + '\n';
+      }
+      
+      navigator.clipboard.writeText(text).then(() => {
+        showSuccess(`✓ Copied ${selectedCells.size} cell(s)`);
+      }).catch(err => {
+        console.error('Copy failed:', err);
+      });
+    }
+    
+    function handleDragStart(e) {
+      const input = e.target;
+      const value = input.value.trim();
+      
+      if (!value) {
+        e.preventDefault();
+        return;
+      }
+      
+      const r = parseInt(input.dataset.r);
+      const c = parseInt(input.dataset.c);
+      
+      e.dataTransfer.effectAllowed = 'copy';
+      e.dataTransfer.setData('text/plain', JSON.stringify({value, row: r, col: c}));
+      input.classList.add('dragging');
+    }
+    
+    function handleDragEnd(e) {
+      e.target.classList.remove('dragging');
+    }
+    
+    function handleReviewDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      reviewBoard.classList.add('drag-over');
+    }
+    
+    function handleReviewDragLeave(e) {
+      if (e.target === reviewBoard) {
+        reviewBoard.classList.remove('drag-over');
+      }
+    }
+    
+    function handleReviewDrop(e) {
+      e.preventDefault();
+      reviewBoard.classList.remove('drag-over');
+      
+      try {
+        const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+        const {value, row, col} = data;
+        
+        // Check if this cell is already in review
+        const alreadyInReview = reviewItems.some(item => item.row === row && item.col === col);
+        
+        if (value && !alreadyInReview) {
+          reviewItems.push({value, row, col});
+          updateCellReviewStatus();
+          renderReviewBoard();
+          showSuccess('✓ Added to review board');
+        }
+      } catch (err) {
+        console.error('Drop failed:', err);
+      }
+    }
+    
+    function updateCellReviewStatus() {
+      // Remove all in-review classes first
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const input = document.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
+          if (input) {
+            input.classList.remove('in-review');
+          }
+        }
+      }
+      
+      // Add in-review class to cells that are in the review board
+      reviewItems.forEach(item => {
+        const input = document.querySelector(`input[data-r="${item.row}"][data-c="${item.col}"]`);
+        if (input) {
+          input.classList.add('in-review');
+        }
+      });
+    }
+    
+    function renderReviewBoard() {
+      const reviewBoard = document.getElementById('reviewBoard');
+      
+      if (reviewItems.length === 0) {
+        reviewBoard.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <div>Drag cells from Solution Cart here to review them</div>
+          </div>
+        `;
+        return;
+      }
+      
+      const priorityText = document.getElementById('priorityField').value.toLowerCase();
+      const priorityValues = priorityText
+        .split(/[\n,]+/)
+        .map(item => item.trim())
+        .filter(item => item);
+      
+      const lookoutText = document.getElementById('lookoutField').value.toLowerCase();
+      const lookoutValues = lookoutText
+        .split(/[\n,]+/)
+        .map(item => item.trim())
+        .filter(item => item);
+      
+      reviewBoard.innerHTML = reviewItems.map((item, index) => {
+        const itemLower = item.value.toLowerCase();
+        const itemPrefix = itemLower.substring(0, 6);
+        
+        // Check for priority match
+        const isPriority = priorityValues.some(pv => {
+          const priorityPrefix = pv.substring(0, 6);
+          return itemPrefix && priorityPrefix && itemPrefix === priorityPrefix;
+        });
+        
+        // Check for lookout match
+        const isLookout = !isPriority && lookoutValues.some(lv => {
+          const lookoutPrefix = lv.substring(0, 6);
+          return itemPrefix && lookoutPrefix && itemPrefix === lookoutPrefix;
+        });
+        
+        const itemClass = isPriority ? 'priority-match' : (isLookout ? 'lookout-match' : '');
+        const badge = isPriority 
+          ? '<span class="review-item-badge badge-priority">Priority</span>'
+          : (isLookout ? '<span class="review-item-badge badge-lookout">Lookout</span>' : '');
+        
+        return `
+          <div class="review-item ${itemClass}">
+            <div class="review-item-content">${item.value}</div>
+            <div style="display: flex; align-items: center;">
+              ${badge}
+              <button class="review-item-remove" onclick="removeReviewItem(${index})">Remove</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function removeReviewItem(index) {
+      const item = reviewItems[index];
+      
+      // Clear the cell in the solution cart
+      const input = document.querySelector(`input[data-r="${item.row}"][data-c="${item.col}"]`);
+      if (input) {
+        input.value = '';
+        input.classList.remove('in-review');
+      }
+      
+      // Remove from review items
+      reviewItems.splice(index, 1);
+      
+      updateCellReviewStatus();
+      renderReviewBoard();
+      checkMatches();
+      showSuccess('✓ Removed from review board and cleared cell');
+    }
     
     function checkMatches() {
       const priorityText = document.getElementById('priorityField').value.toLowerCase();
@@ -539,7 +1050,8 @@
       const data = {
         lookout: document.getElementById("lookoutField").value,
         priority: document.getElementById("priorityField").value,
-        cells
+        cells,
+        reviewItems
       };
       const key = btoa(JSON.stringify(data));
       document.getElementById("keyBox").value = key;
@@ -556,6 +1068,7 @@
         const data = JSON.parse(atob(key));
         document.getElementById("lookoutField").value = data.lookout || "";
         document.getElementById("priorityField").value = data.priority || "";
+        reviewItems = data.reviewItems || [];
         
         // Clear all cells first
         for (let r = 0; r < rows; r++) {
@@ -573,6 +1086,8 @@
           }
         }
         checkMatches();
+        renderReviewBoard();
+        updateCellReviewStatus();
         showSuccess('✓ Data loaded successfully');
       } catch (e) {
         console.error(e);
